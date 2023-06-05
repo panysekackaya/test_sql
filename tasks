@@ -1,0 +1,49 @@
+1. Написать запрос для вывода пользователей, которые не создали 
+ни одного поста и не оставили ни одного коммента:
+
+SELECT DISTINCT u.Id,
+                u.DisplayName
+FROM Users AS u
+LEFT OUTER JOIN
+  (SELECT OwnerUserId
+   FROM Posts
+   WHERE OwnerUserId IS NULL) AS p ON u.Id = p.OwnerUserId
+LEFT OUTER JOIN
+  (SELECT UserId
+   FROM Comments
+   WHERE UserId IS NULL) AS c ON u.Id = c.UserId
+
+
+2. Написать запрос sql для вывода года, кол-во постов за год и кол-во комментов за год:
+
+SELECT YEAR (p.CreationDate) AS YearDate,
+       COUNT (p.Id) AS PostCount,
+       COUNT (c.PostId) AS CommentCount
+FROM Posts AS p
+LEFT OUTER JOIN  Comments AS c ON p.Id = c.PostId
+GROUP BY YEAR (p.CreationDate)
+ORDER BY YEAR (p.CreationDate)
+
+3. Вывести 3 самых активных (по кол-ву комментариев) пользователей (display name) и их кол-во комментариев:
+
+SELECT TOP 3 u.DisplayName,
+       COUNT (c.Id) AS CommentCount
+FROM Comments AS c
+LEFT OUTER JOIN  Users AS u ON c.UserId = u.Id
+GROUP BY u.DisplayName
+ORDER BY COUNT (c.Id) DESC
+
+
+4. Расширить п.3, добавив процент кол-ва комментариев пользователя от общего
+кол-ва
+
+SELECT *,
+       top3.CommentCount/(SELECT COUNT(*) FROM Comments)*100 AS prcnt
+FROM (
+      SELECT TOP 3 u.DisplayName,
+             COUNT (c.Id) AS CommentCount
+      FROM Comments AS c
+      LEFT OUTER JOIN  Users AS u ON c.UserId = u.Id
+      GROUP BY u.DisplayName
+      ORDER BY COUNT (c.Id) DESC
+      ) AS top3
