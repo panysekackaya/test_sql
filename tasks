@@ -29,7 +29,7 @@ ORDER BY YEAR (p.CreationDate)
 SELECT TOP 3 u.DisplayName,
        COUNT (c.Id) AS CommentCount
 FROM Comments AS c
-LEFT OUTER JOIN  Users AS u ON c.UserId = u.Id
+RIGHT JOIN  Users AS u ON c.UserId = u.Id
 GROUP BY u.DisplayName
 ORDER BY COUNT (c.Id) DESC
 
@@ -37,13 +37,10 @@ ORDER BY COUNT (c.Id) DESC
 4. Расширить п.3, добавив процент кол-ва комментариев пользователя от общего
 кол-ва
 
-SELECT *,
-       top3.CommentCount/(SELECT COUNT(*) FROM Comments)*100 AS prcnt
-FROM (
-      SELECT TOP 3 u.DisplayName,
-             COUNT (c.Id) AS CommentCount
-      FROM Comments AS c
-      LEFT OUTER JOIN  Users AS u ON c.UserId = u.Id
-      GROUP BY u.DisplayName
-      ORDER BY COUNT (c.Id) DESC
-      ) AS top3
+SELECT TOP 3 u.DisplayName,
+       COUNT (c.Id) AS CommentCount,
+       ROUND(CAST(COUNT(c.Id) as float)/(SELECT COUNT(id) FROM Comments)*100,3) AS PercentageTotal
+FROM Users as u
+INNER JOIN Comments as c ON u.Id = c.UserId 
+GROUP BY u.Id, u.DisplayName
+ORDER BY COUNT (c.Id) DESC
